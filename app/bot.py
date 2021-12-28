@@ -7,6 +7,7 @@ TOKEN = '1618584232:AAHmGvkcP91w9gsxM9Vhw5_FdlTJlULD6vg'
 updater = Updater(token=TOKEN)
 dispatcher = updater.dispatcher
 
+
 # функция обработки команды '/start'
 def start(update, context):
     context.bot.send_message(chat_id=update.effective_chat.id, 

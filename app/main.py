@@ -8,6 +8,7 @@ from requests.exceptions import ConnectionError, Timeout, TooManyRedirects
 import os
 from datetime import datetime
 from flask_sslify import SSLify
+
 # 1. Прием сообщений
 # 2. Отправка сообщений
 
