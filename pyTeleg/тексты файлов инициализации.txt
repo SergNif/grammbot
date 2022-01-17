@@ -1,0 +1,501 @@
+
+
+# Brotli
+    brotli on;
+    brotli_comp_level ;
+
+    brotli_types
+    text/xml
+    image/svg+xml
+    application/x-font-ttf
+    image/vnd.microsoft.icon
+    application/x-font-opentype
+    application/json
+    font/eot
+    application/vnd.ms-fontobject
+    application/javascript
+    font/otf
+    application/xml
+    application/xhtml+xml
+    text/javascript
+    application/x-javascript
+    text/$;
+
+[Nginx HTTP]
+title=Web Server
+description=Enable NGINX HTTP traffic
+port=80/tcp
+
+[Nginx HTTPS]
+title=Web Server (HTTPS) \
+description=Enable NGINX HTTPS traffic
+port=443/tcp
+
+[Nginx Full]
+title=Web Server (HTTP, HTTPS)
+description=Enable NGINX HTTP and HTTPS traffic
+port=80, 443/tcp
+
+
+ssl_session_timeout 1d;
+ssl_session_cache shared:SSL:10m;
+ssl_session_tickets off;
+
+ssl_dhparam /etc/ssl/certs/dhparam.pem;
+
+ssl_protocols TLSv1.2 TLSv1.3;
+ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384;
+ssl_prefer_server_ciphers off;
+
+add_header Strict-Transport-Security "max-age=63072000" always;
+
+
+server {
+    listen 80;
+    listen [::]:80;
+
+    server_name gr.tgram.ml www.gr.tgram.ml;
+    root /var/www/gr.tgram.ml/html;
+    index index.html index.xml;
+}
+
+
+server {
+    listen 4443;
+#    listen [::]:80;
+
+    server_name gr.tgram.ml www.gr.tgram.ml;
+    root /var/www/gr.tgram.ml/html;
+#    index index.html index.xml;
+}
+
+sudo nano /var/www/gr.tgram.ml/html/index.html
+
+<!DOCTYPE html>
+<meta charset="UTF-8">
+<title>GR.tgram.ml</title>
+<h1>GR.tgram.ml</h1>
+
+
+server {
+    listen 80;
+    listen [::]:80;
+
+    server_name gr.tgram.m www.gr.tgram.ml;
+    return 301 https://gr.tgram.ml$request_uri;
+}
+
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+
+    server_name gr.tgram.ml;
+    return 301 https://gr.tgram.ml$request_uri;
+
+    ssl_certificate /etc/letsencrypt/live/gr.tgram.ml/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/gr.tgram.ml/privkey.pem;
+    ssl_trusted_certificate /etc/letsencrypt/live/gr.tgram.ml/chain.pem;
+
+    include snippets/ssl-params.conf;
+}
+
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+
+    server_name gr.tgram.ml;
+    root /var/www/gr.tgram.ml/html;
+    index index.html index.xml;
+
+    ssl_certificate /etc/letsencrypt/live/gr.tgram.ml/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/gr.tgram.ml/privkey.pem;
+    ssl_trusted_certificate /etc/letsencrypt/live/gr.tgram.ml/chain.pem;
+
+    include snippets/ssl-params.conf;
+}
+
+upstream website    {
+    ip_hash;                        # for sticky sessions, more below
+    server                          website:4443 max_fails=1 fail_timeout=10s;
+}
+
+   location / {
+        proxy_pass                  http://gr.tgram.ml;
+        proxy_set_header            Host $host;
+        proxy_set_header            X-Real-IP $remote_addr;
+
+        proxy_set_header            X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header            X-Forwarded-Proto http;
+        proxy_redirect              http:// $scheme://;
+    }
+
+
+
+
+
+
+[Unit]
+Description=Uvicorn instance to serve My flask app
+After=network.target
+[Service]
+User=serg
+Group=serg
+WorkingDirectory=/var/www/gr.tgram.ml/html
+Environment="PATH=/home/serg/gram/bin"
+ExecStart=/home/serg/gram/bin/uvicorn --workers 4  uvicorn.workers.UvicornWorker exam:app --bind 0.0.0.0:4443
+
+[Install]
+WantedBy=multi-user.target
+
+
+
+upstream website    {
+    ip_hash;                        # for sticky sessions, more below
+    server                          gr.tgram.ml:4443 max_fails=1 fail_timeout=10s;
+}
+
+server {
+    listen 80;
+    listen [::]:80;
+
+    server_name gr.tgram.ml www.gr.tgram.ml;
+    return 301 https://gr.tgram.ml$request_uri;
+}
+
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+
+    server_name www.gr.tgram.ml;
+    return 301 https://gr.tgram.ml$request_uri;
+
+    ssl_certificate /etc/letsencrypt/live/gr.tgram.ml/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/gr.tgram.ml/privkey.pem;
+    ssl_trusted_certificate /etc/letsencrypt/live/gr.tgram.ml/chain.pem;
+
+    include snippets/ssl-params.conf;
+}
+
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+
+    server_name gr.tgram.ml;
+    root /var/www/gr.tgram.ml/html;
+#    index index.html index.xml;
+
+    ssl_certificate /etc/letsencrypt/live/gr.tgram.ml/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/gr.tgram.ml/privkey.pem;
+    ssl_trusted_certificate /etc/letsencrypt/live/gr.tgram.ml/chain.pem;
+
+   location / {
+        proxy_pass                  http://gr.tgram.ml;
+        proxy_set_header            Host $host;
+        proxy_set_header            X-Real-IP $remote_addr;
+
+        proxy_set_header            X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header            X-Forwarded-Proto http;
+        proxy_redirect              http:// $scheme://;
+    }    
+
+    include snippets/ssl-params.conf;
+
+}
+
+
+
+server {
+    listen 80;
+    listen [::]:80;
+
+    server_name gr.tgram.ml www.gr.tgram.ml;
+    return 301 https://gr.tgram.ml$request_uri;
+}
+
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+
+    server_name www.gr.tgram.ml;
+    return 301 https://gr.tgram.ml$request_uri;
+
+    ssl_certificate /etc/letsencrypt/live/gr.tgram.ml/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/gr.tgram.ml/privkey.pem;
+    ssl_trusted_certificate /etc/letsencrypt/live/gr.tgram.ml/chain.pem;
+
+    include snippets/ssl-params.conf;
+}
+
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+
+    server_name gr.tgram.ml;
+    root /var/www/gr.tgram.ml/html;
+    index index.html index.xml;
+
+    ssl_certificate /etc/letsencrypt/live/gr.tgram.ml/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/gr.tgram.ml/privkey.pem;
+    ssl_trusted_certificate /etc/letsencrypt/live/gr.tgram.ml/chain.pem;
+
+    include snippets/ssl-params.conf;
+}
+
+  upstream uvicorn {
+    server unix:/var/www/gr.tgram.ml/html/uvi.sock;
+  }
+
+}
+
+
+upstream website    {
+#    ip_hash;  # for sticky sessions, more below
+    server 0.0.0.0:4443 max_fails=1 fail_timeout=10s;
+}
+
+server {
+    listen 80;
+    listen [::]:80;
+
+    server_name gr.tgram.ml www.gr.tgram.ml;
+    return 301 https://gr.tgram.ml$request_uri;
+}
+
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+
+    server_name www.gr.tgram.ml;
+    return 301 https://gr.tgram.ml$request_uri;
+
+    ssl_certificate /etc/letsencrypt/live/gr.tgram.ml/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/gr.tgram.ml/privkey.pem;
+    ssl_trusted_certificate /etc/letsencrypt/live/gr.tgram.ml/chain.pem;
+
+    include snippets/ssl-params.conf;
+}
+
+uds='/var/www/gr.tgram.ml/html/exam.sock', 
+
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+
+    server_name gr.tgram.ml;
+    root /var/www/gr.tgram.ml/html;
+    index index.html index.xml;
+
+    ssl_certificate /etc/letsencrypt/live/gr.tgram.ml/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/gr.tgram.ml/privkey.pem;
+    ssl_trusted_certificate /etc/letsencrypt/live/gr.tgram.ml/chain.pem;
+
+   location / {
+#        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+#        proxy_set_header Host $http_host;
+#        proxy_redirect off;
+
+        proxy_pass http://website;
+
+#        proxy_pass_header Server;
+#        proxy_set_header Host $host;
+#        proxy_set_header X-Scheme $scheme;
+#        proxy_set_header X-SSL-Protocol $ssl_protocol;
+    }
+
+    include snippets/ssl-params.conf;
+
+}
+
+
+ 
+#  upstream uvicorn {
+#    server unix:/var/www/gr.tgram.ml/html/exam.sock;
+#  }
+ 
+server {
+    listen 80;
+#    listen ;
+    listen [::]:80;
+
+    server_name gr.tgram.ml www.gr.tgram.ml;
+    return 301 https://gr.tgram.ml$request_uri;
+
+}
+
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+
+    server_name www.gr.tgram.ml;
+    return 301 https://gr.tgram.ml$request_uri;
+
+    ssl_certificate /etc/letsencrypt/live/gr.tgram.ml/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/gr.tgram.ml/privkey.pem;
+    ssl_trusted_certificate /etc/letsencrypt/live/gr.tgram.ml/chain.pem;
+
+
+
+    include snippets/ssl-params.conf;
+}
+
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+
+    server_name gr.tgram.ml;
+    root /var/www/gr.tgram.ml/html;
+    index index.html index.xml;
+
+    location / {
+      proxy_pass unix:/var/www/gr.tgram.ml/html/exam.sock; #http://0.0.0.0:8000;
+      proxy_set_header Host $host;
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+#      proxy_set_header X-Forwarded-Proto $scheme;
+#      proxy_set_header Upgrade $http_upgrade;
+#      proxy_set_header Connection $connection_upgrade;
+#      proxy_redirect off;
+#      proxy_buffering off;
+#      proxy_pass http://uvicorn;
+    }
+
+    ssl_certificate /etc/letsencrypt/live/gr.tgram.ml/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/gr.tgram.ml/privkey.pem;
+    ssl_trusted_certificate /etc/letsencrypt/live/gr.tgram.ml/chain.pem;
+
+    include snippets/ssl-params.conf;
+}
+
+
+#  upstream uvicorn {
+#    server unix:/var/www/gr.tgram.ml/html/exam.sock;
+#  }
+
+server {
+    listen 80;
+#    listen ;
+    listen [::]:80;
+
+    server_name gr.tgram.ml www.gr.tgram.ml;
+    return 301 https://gr.tgram.ml$request_uri;
+
+}
+
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+
+    server_name www.gr.tgram.ml;
+    return 301 https://gr.tgram.ml$request_uri;
+
+    ssl_certificate /etc/letsencrypt/live/gr.tgram.ml/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/gr.tgram.ml/privkey.pem;
+    ssl_trusted_certificate /etc/letsencrypt/live/gr.tgram.ml/chain.pem;
+
+
+
+    include snippets/ssl-params.conf;
+}
+
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+
+    server_name gr.tgram.ml;
+    root /var/www/gr.tgram.ml/html;
+    index index.html index.xml;
+
+    location / {
+      proxy_pass unix:/var/www/gr.tgram.ml/html/exam.sock;# http://0.0.0.0:8000;
+      proxy_set_header Host $host;
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+#      proxy_set_header X-Forwarded-Proto $scheme;
+#      proxy_set_header Upgrade $http_upgrade;
+#      proxy_set_header Connection $connection_upgrade;
+#      proxy_redirect off;
+#      proxy_buffering off;
+#      proxy_pass http://uvicorn;
+    }
+
+    ssl_certificate /etc/letsencrypt/live/gr.tgram.ml/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/gr.tgram.ml/privkey.pem;
+    ssl_trusted_certificate /etc/letsencrypt/live/gr.tgram.ml/chain.pem;
+
+    include snippets/ssl-params.conf;
+}
+
+
+    location / {
+      proxy_pass http://0.0.0.0:8000; #unix:/var/www/gr.tgram.ml/html/exam.sock; 
+      proxy_set_header Host $host;
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+
+    }
+
+
+    server {
+    listen 80;
+    listen [::]:80;
+        location / {
+        proxy_pass http://localhost:8000;
+        }
+    server_name gr.tgram.ml www.gr.tgram.ml;
+    return 301 https://gr.tgram.ml$request_uri;
+}
+
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+
+    server_name www.gr.tgram.ml;
+    return 301 https://gr.tgram.ml$request_uri;
+
+    ssl_certificate /etc/letsencrypt/live/gr.tgram.ml/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/gr.tgram.ml/privkey.pem;
+    ssl_trusted_certificate /etc/letsencrypt/live/gr.tgram.ml/chain.pem;
+
+#    include snippets/ssl-params.conf;
+}
+
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+
+    server_name gr.tgram.ml;
+    root /var/www/gr.tgram.ml/html;
+#       try_files  $uri @unicorn;#  $uri/index.html $uri index.xml;
+
+    location / {
+#       include proxy_params;
+      proxy_pass http://localhost:8000; #unix:/var/www/gr.tgram.ml/html/exam.sock;
+      proxy_set_header Host $host;
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+
+    }
+
+    ssl_certificate /etc/letsencrypt/live/gr.tgram.ml/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/gr.tgram.ml/privkey.pem;
+    ssl_trusted_certificate /etc/letsencrypt/live/gr.tgram.ml/chain.pem;
+
+ #   include snippets/ssl-params.conf;
+}
+
+
+    server {
+
+    location / {
+#       include proxy_params;
+      proxy_pass http://localhost:8000; #unix:/var/www/gr.tgram.ml/html/exam.sock;
+      proxy_set_header Host $host;
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+
+    }
+    }
+
+    location / {
+        proxy_pass http://localhost:8080;
+    }
+
+    location /images/ {
+        root /data;
+    }
+}

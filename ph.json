@@ -1,0 +1,47 @@
+{
+    "message_id": 342,
+    "from": {
+        "id": 133420623,
+        "is_bot": false,
+        "first_name": "Serg",
+        "last_name": "Nifant",
+        "language_code": "en"
+    },
+    "chat": {
+        "id": 133420623,
+        "first_name": "Serg",
+        "last_name": "Nifant",
+        "type": "private"
+    },
+    "date": 1642070407,
+    "photo": [
+        {
+            "file_id": "AgACAgIAAxkBAAIBVmHgAYcNX2ceLfEK3-vAXadfo0zcAAJQuTEbUur4Si8xIpNb2jGwAQADAgADcwADIwQ",
+            "file_unique_id": "AQADULkxG1Lq-Ep4",
+            "file_size": 524,
+            "width": 90,
+            "height": 25
+        },
+        {
+            "file_id": "AgACAgIAAxkBAAIBVmHgAYcNX2ceLfEK3-vAXadfo0zcAAJQuTEbUur4Si8xIpNb2jGwAQADAgADbQADIwQ",
+            "file_unique_id": "AQADULkxG1Lq-Epy",
+            "file_size": 5284,
+            "width": 320,
+            "height": 88
+        },
+        {
+            "file_id": "AgACAgIAAxkBAAIBVmHgAYcNX2ceLfEK3-vAXadfo0zcAAJQuTEbUur4Si8xIpNb2jGwAQADAgADeQADIwQ",
+            "file_unique_id": "AQADULkxG1Lq-Ep-",
+            "file_size": 22112,
+            "width": 862,
+            "height": 237
+        },
+        {
+            "file_id": "AgACAgIAAxkBAAIBVmHgAYcNX2ceLfEK3-vAXadfo0zcAAJQuTEbUur4Si8xIpNb2jGwAQADAgADeAADIwQ",
+            "file_unique_id": "AQADULkxG1Lq-Ep9",
+            "file_size": 23773,
+            "width": 800,
+            "height": 220
+        }
+    ]
+}

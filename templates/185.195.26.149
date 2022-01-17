@@ -1,0 +1,10 @@
+
+server { 
+	listen 80;
+	server_name 185.195.26.149;
+
+	location / {
+	 include proxy_params;
+	 proxy_pass http://unix:/var/www/html/flaskapp.sock;
+	}
+}

@@ -1,0 +1,12 @@
+ftp_client = ssh.open_sftp()
+ftp_client.chown(serg -R /home/serg)
+ftp_client.chmod(777 -R /home/serg)
+
+ftp_client.chdir('/home/serg')
+ftp_client.put('/home/serg/grammbot/pyTeleg/getf.txt', '/home/serg/AQ.txt')
+
+print(f'{ftp_client.getcwd()=} ')
+ftp_client.close()
+ssh.close()
+
+certbot certonly --webroot --agree-tos --email 777ntfs@gmail.com --webroot-path /var/www/uvic -d tg.gram.ml 
