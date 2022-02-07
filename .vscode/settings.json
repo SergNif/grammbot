@@ -1,0 +1,32 @@
+{   "workbench.colorCustomizations": {
+    "titleBar.activeBackground": "#425d96",
+    "titleBar.border": "#ebe8e8",
+    "titleBar.inactiveBackground": "#7d31c97c",
+    "titleBar.activeForeground": "#ebe8e8",
+    "statusBar.background": "#7C21D7",
+    "statusBar.debuggingBackground": "#7C21D7",
+    "statusBar.noFolderBackground": "#62279c",
+    "statussBar.prominentBackground": "#7C21D7",
+    "statusBar.foreground": "#ebe8e8"},
+
+    "terminal.integrated.profiles.windows": {
+        "PowerShell": {
+            "source": "PowerShell",
+            "icon": "terminal-powershell"
+        },
+        "Command Prompt": {
+            "path": [
+                "${env:windir}\\Sysnative\\cmd.exe",
+                "${env:windir}\\System32\\cmd.exe"
+            ],
+            "args": [],
+            "icon": "terminal-cmd"
+        },
+        "Git Bash": {
+            "source": "Git Bash",
+            "icon": "terminal-bash", //what icon to use
+            "color": "terminal.ansiGreen" //color of icon
+        }
+    },
+"terminal.integrated.defaultProfile.windows": "Git Bash",
+}
